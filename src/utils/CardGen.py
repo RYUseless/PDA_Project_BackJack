@@ -10,6 +10,7 @@ import random
 
 class Generation:
     def __init__(self):
+        print("\n\033[1m\u2022 Card Generation:\033[0m")
         self.__deck = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8,
                        9, 9, 9, 9, 10,
                        10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
@@ -26,11 +27,11 @@ class Generation:
         dealer = 0
         acep = 0
         aced = 0
-        print("Kontrola balíčku", self.__deck)
+        print("\tKontrola balíčku", self.__deck)
         for i in range(0, 2):
             player += self.__deck[0]
             if self.__deck[0] == 1:
-                print("Hráč vytáhl eso")
+                print("\tHráč vytáhl eso")
                 if player < 11:
                     player += 10
                     acep += 1
@@ -39,16 +40,16 @@ class Generation:
             del self.__deck[0]
             dealer += self.__deck[0]
             if self.__deck[0] == 1:
-                print("Krupiér vytáhl eso")
+                print("\tKrupiér vytáhl eso")
                 if dealer < 11:
                     dealer += 10
                     aced += 1
             if (dealer > 21) and (aced == 1):
                 dealer -= 10
             del self.__deck[0]
-        print("Hodnota hráčovy ruky je :", player)
+        print("\tHodnota hráčovy ruky je :", player)
         if player == 21:
-            print("Hráč má blackjack, vítězí hráč")
-        print("Hodnota krupiérovy ruky je:", dealer)
+            print("\tHráč má blackjack, vítězí hráč")
+        print("\tHodnota krupiérovy ruky je:", dealer)
         if dealer == 21:
-            print("Krupiér má blackjack, vítězí krupiér")
+            print("\tKrupiér má blackjack, vítězí krupiér")
