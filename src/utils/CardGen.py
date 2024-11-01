@@ -6,8 +6,6 @@
 import random
 
 
-# from random import randint
-
 class Generation:
     def __init__(self):
         print("\n\033[1m\u2022 Card Generation:\033[0m")
@@ -20,36 +18,76 @@ class Generation:
         while shuffle > 0:
             random.shuffle(self.__deck)
             shuffle -= 1
-        self.asses()
+        self.play()
 
-    def asses(self):
-        player = 0
-        dealer = 0
-        acep = 0
-        aced = 0
-        print("\tKontrola balíčku", self.__deck)
-        for i in range(0, 2):
-            player += self.__deck[0]
-            if self.__deck[0] == 1:
-                print("\tHráč vytáhl eso")
-                if player < 11:
-                    player += 10
-                    acep += 1
-            if (player > 21) and (acep == 1):
-                player -= 10
-            del self.__deck[0]
-            dealer += self.__deck[0]
-            if self.__deck[0] == 1:
-                print("\tKrupiér vytáhl eso")
-                if dealer < 11:
-                    dealer += 10
-                    aced += 1
-            if (dealer > 21) and (aced == 1):
-                dealer -= 10
-            del self.__deck[0]
-        print("\tHodnota hráčovy ruky je :", player)
-        if player == 21:
+    def play(self):
+        player_hand = []
+        dealer_hand = []
+
+        # Deal initial two cards
+        for _ in range(2):
+            player_hand.append(self.__deck.pop(0))
+            dealer_hand.append(self.__deck.pop(0))
+
+        player_sum = self.calculate_hand(player_hand)
+        dealer_sum = self.calculate_hand(dealer_hand)
+
+        print("\tHodnota hráčovy ruky je :", player_sum)
+        # print("\tHodnota krupiérovy ruky je:", dealer_sum)
+
+        # Check for initial blackjack
+        if player_sum == 21 and dealer_sum < 21:
             print("\tHráč má blackjack, vítězí hráč")
-        print("\tHodnota krupiérovy ruky je:", dealer)
-        if dealer == 21:
+            return
+        elif dealer_sum == 21 and player_sum < 21:
             print("\tKrupiér má blackjack, vítězí krupiér")
+            return
+
+        # Player turn
+        while player_sum < 21:
+            action = input("\tChcete další kartu? (ano/ne): ").strip().lower()
+            if action == 'ano':
+                player_hand.append(self.__deck.pop(0))
+                player_sum = self.calculate_hand(player_hand)
+                print("\tHodnota hráčovy ruky je :", player_sum)
+            else:
+                break
+
+        # Dealer turn
+        while dealer_sum < 17:
+            dealer_hand.append(self.__deck.pop(0))
+            dealer_sum = self.calculate_hand(dealer_hand)
+            print("\tHodnota krupiérovy ruky je:", dealer_sum)
+
+        # Determine winner
+        if player_sum > 21:
+            print("\tHráč přetáhl, vítězí krupiér")
+        elif dealer_sum > 21:
+            print("\tKrupiér přetáhl, vítězí hráč")
+        elif player_sum > dealer_sum:
+            print("\tHráč vítězí")
+        elif dealer_sum > player_sum:
+            print("\tKrupiér vítězí")
+        else:
+            print("\tRemíza")
+
+    def calculate_hand(self, hand):
+        total = 0
+        ace_count = 0
+        for card in hand:
+            if card == 1:
+                ace_count += 1
+                total += 11
+            else:
+                total += card
+
+        # Adjust for aces
+        while total > 21 and ace_count > 0:
+            total -= 10
+            ace_count -= 1
+
+        return total
+
+if __name__ == "__main__":
+    game = Generation()
+    game.setup()
