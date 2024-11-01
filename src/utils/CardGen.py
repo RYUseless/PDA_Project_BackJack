@@ -13,14 +13,14 @@ class Generation:
                        9, 9, 9, 9, 10,
                        10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
 
-    def setup(self):
+    def _setup(self):
         shuffle = random.randint(1, 9)
         while shuffle > 0:
             random.shuffle(self.__deck)
             shuffle -= 1
-        self.play()
+        self._play()
 
-    def play(self):
+    def _play(self):
         player_hand = []
         dealer_hand = []
 
@@ -29,8 +29,8 @@ class Generation:
             player_hand.append(self.__deck.pop(0))
             dealer_hand.append(self.__deck.pop(0))
 
-        player_sum = self.calculate_hand(player_hand)
-        dealer_sum = self.calculate_hand(dealer_hand)
+        player_sum = self._calculate_hand(player_hand)
+        dealer_sum = self._calculate_hand(dealer_hand)
 
         print("\tHodnota hráčovy ruky je :", player_sum)
         # print("\tHodnota krupiérovy ruky je:", dealer_sum)
@@ -48,7 +48,7 @@ class Generation:
             action = input("\tChcete další kartu? (ano/ne): ").strip().lower()
             if action == 'ano':
                 player_hand.append(self.__deck.pop(0))
-                player_sum = self.calculate_hand(player_hand)
+                player_sum = self._calculate_hand(player_hand)
                 print("\tHodnota hráčovy ruky je :", player_sum)
             else:
                 break
@@ -56,7 +56,7 @@ class Generation:
         # Dealer turn
         while dealer_sum < 17:
             dealer_hand.append(self.__deck.pop(0))
-            dealer_sum = self.calculate_hand(dealer_hand)
+            dealer_sum = self._calculate_hand(dealer_hand)
             print("\tHodnota krupiérovy ruky je:", dealer_sum)
 
         # Determine winner
@@ -71,7 +71,8 @@ class Generation:
         else:
             print("\tRemíza")
 
-    def calculate_hand(self, hand):
+    @staticmethod
+    def _calculate_hand(hand):
         total = 0
         ace_count = 0
         for card in hand:
@@ -88,6 +89,7 @@ class Generation:
 
         return total
 
-if __name__ == "__main__":
-    game = Generation()
-    game.setup()
+    def run(self):
+        self._setup()
+
+
