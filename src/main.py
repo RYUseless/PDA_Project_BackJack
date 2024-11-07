@@ -1,5 +1,13 @@
-import src.utils.CardGen as CardGenerationFunc
+# main.py
+import src.utils.funny as InitialPrint
+from src.utils.enviroment import Environment
+from src.utils.visualization import Visualization
 
 if __name__ == "__main__":
-    cardGen_Instance = CardGenerationFunc.Generation()
-    cardGen_Instance.run()
+    funnyPrint_instance = InitialPrint.Greeter()
+    funnyPrint_instance.run()
+
+    env = Environment()
+    env.train_agent()
+    Visualization.plot_training(env, env.agent)
+
