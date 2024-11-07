@@ -62,9 +62,9 @@ class Environment:
                 episode_length += 1  # Počítání délky epizody
 
             # Určení výsledku epizody
-            if self.reward > 0:
+            if int(self.reward) > 0:
                 result = 'player'  # Hráč vyhrál
-            elif self.reward < 0:
+            elif int(self.reward) < 0.0:
                 result = 'dealer'  # Dealer vyhrál
             else:
                 result = 'draw'  # Remíza
@@ -94,4 +94,5 @@ class Environment:
         print(f"Hráč vyhrál {self.player_wins}x")
         print(f"Dealer vyhrál {self.dealer_wins}x")
         print(f"Remízy: {self.draws}x")
+
 
