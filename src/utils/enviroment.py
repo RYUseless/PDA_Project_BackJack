@@ -4,16 +4,16 @@ from collections import deque
 # import numpy as np
 from tqdm import tqdm
 from src.utils.agent import BlackjackAgent
-from src.utils.visualization import Visualization
 
 
 class Environment:
     def __init__(self,
-                 n_episodes=110_000,
+                 n_episodes=100_000,
                  learning_rate=0.01,
                  start_epsilon=1.0,
                  epsilon_decay=0.95,
-                 final_epsilon=0.1):
+                 final_epsilon=0.1,
+                 ):
         """
         Inicializuje prostředí Blackjack a agenta.
 
@@ -35,7 +35,7 @@ class Environment:
             raise ValueError("final_epsilon musí být >= 0 a menší než start_epsilon.")
 
         self.__reward = 0
-        self.__env = gym.make("Blackjack-v1", sab=True)
+        self.__env = gym.make("Blackjack-v1", natural=True)  # sab → simple, natural → check for eso and shit
         self.__n_episodes = n_episodes
 
         # Sledování průběhu epizod
@@ -55,6 +55,11 @@ class Environment:
         self.player_wins = 0
         self.dealer_wins = 0
         self.draws = 0
+
+        # other vals:
+        self.__percentage_draw = None
+        self.__percentage_player = None
+        self.__percentage_dealer = None
 
     def update_results(self, result):
         """Aktualizace skóre po každé epizodě."""
@@ -112,16 +117,19 @@ class Environment:
         # Po dokončení všech epizod vypíšeme souhrn
         self.print_final_results()
 
-        # Vizualizace tréninkového průběhu
-        Visualization.plot_training(self, self.agent)  # self → environment itself, and agent object
-
     def print_final_results(self):
-        percentage_player = (self.player_wins / len(self.return_queue)) * 100
-        percentage_dealer = (self.dealer_wins / len(self.return_queue)) * 100
-        percentage_draw = (self.draws / len(self.return_queue)) * 100
+        self.__percentage_player = round((self.player_wins / len(self.return_queue)) * 100, 1)
+        self.__percentage_dealer = round((self.dealer_wins / len(self.return_queue)) * 100, 1)
+        self.__percentage_draw = round((self.draws / len(self.return_queue)) * 100, 1)
 
         print("\nTrénování dokončeno! Výsledky:")
         print(f"\nKonečné skóre po {len(self.return_queue)} epizodách:")
-        print(f"Hráč vyhrál {self.player_wins}x, což odpovídá {percentage_player}% úspěšnosti.")
-        print(f"Dealer vyhrál {self.dealer_wins}x, což odpovídá {percentage_dealer}% úspěšnosti.")
-        print(f"Remízy: {self.draws}x, což odpovídá {percentage_draw}% úspěšnosti.")
+        print(f"Hráč vyhrál {self.player_wins}x, což odpovídá {self.__percentage_player}% úspěšnosti.")
+        print(f"Dealer vyhrál {self.dealer_wins}x, což odpovídá {self.__percentage_dealer}% úspěšnosti.")
+        print(f"Remízy: {self.draws}x, což odpovídá {self.__percentage_draw}% úspěšnosti.")
+
+    def get_results(self):
+        return self.__percentage_player, self.__percentage_dealer, self.__percentage_draw
+
+    def close_env(self):
+        self.__env.close()
