@@ -39,3 +39,10 @@ class BlackjackAgent:
     def decay_epsilon(self):
         """Postupně snižuje epsilon pro zajištění většího využívání naučené politiky."""
         self.epsilon = max(self.final_epsilon, self.epsilon - self.epsilon_decay)
+
+
+
+
+
+
+

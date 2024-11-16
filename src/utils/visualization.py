@@ -1,7 +1,8 @@
+# visualization
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
-from matplotlib.patches import Patch
+# import seaborn as sns
+# from matplotlib.patches import Patch
 
 
 class Visualization:
@@ -56,4 +57,3 @@ class Visualization:
         # Ukončí program po zavření okna
         print("Graf zavřen. Program se ukončuje.")
         exit()
-
