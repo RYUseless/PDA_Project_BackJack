@@ -8,6 +8,8 @@ class BlackjackAgent:
             self,
             env,
             learning_rate: float,
+            lr_decay: float,
+            min_learning_rate: float,
             initial_epsilon: float,
             epsilon_decay: float,
             final_epsilon: float,
@@ -16,6 +18,8 @@ class BlackjackAgent:
         """Inicializuje agenta pro Q-learning s prázdnou Q-tabulkou a hyperparametry."""
         self.q_values = defaultdict(lambda: np.zeros(env.env.action_space.n))
         self.lr = learning_rate
+        self.min_lr = min_learning_rate
+        self.lr_decay = lr_decay
         self.discount_factor = discount_factor
         self.epsilon = initial_epsilon
         self.epsilon_decay = epsilon_decay
@@ -40,8 +44,9 @@ class BlackjackAgent:
         """Postupně snižuje epsilon pro zajištění většího využívání naučené politiky."""
         self.epsilon = max(self.final_epsilon, self.epsilon - self.epsilon_decay)
 
-
-
+    def decay_learning_rate(self):
+        """Dynamicky snižuje hodnotu learning rate."""
+        self.lr = max(self.min_lr, self.lr * self.lr_decay)
 
 
 

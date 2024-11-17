@@ -10,6 +10,8 @@ class Environment:
     def __init__(self,
                  n_episodes=100_000,
                  learning_rate=0.01,
+                 min_learning_rate=0.001,
+                 lr_decay=0.9999,
                  start_epsilon=1.0,
                  epsilon_decay=0.95,
                  final_epsilon=0.1,
@@ -46,6 +48,8 @@ class Environment:
         self.agent = BlackjackAgent(
             env=self.__env,
             learning_rate=learning_rate,
+            min_learning_rate=min_learning_rate,
+            lr_decay=lr_decay,
             initial_epsilon=start_epsilon,
             epsilon_decay=epsilon_decay,
             final_epsilon=final_epsilon,
