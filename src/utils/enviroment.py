@@ -74,40 +74,75 @@ class Environment:
         elif result == 'draw':
             self.draws += 1
 
-    def player_reward(self, player_sum, action, done):
-        """negative rewards:"""
+    def player_reward(self, player_sum, action, done, episode_count):
+        penalty_factor = min(episode_count / self.__n_episodes, 1.0)
+
+        """ Negative Rewards ------------------------------------- """
         # penalty when overshooting 21
         if player_sum > 21:
             self.__reward -= 1.0
 
-        # too much risky move
-        if action == 1 and player_sum >= 17:
-            self.__reward -= 0.3
+        # Too risky to hit when close to 21
+        if action == 1 and 19 <= player_sum < 21:
+            self.__reward -= 0.5 * penalty_factor
 
-        # BROTHER IS CAMPING HIS CARD WTF
-        if action == 0 and player_sum < 12:
-            self.__reward -= 0.3
+        # Too conservative: standing too early with low sum
+        if action == 0 and player_sum < 15:
+            self.__reward -= 0.3 * penalty_factor
 
-        # player is in lower numbers, SHAME
-        if player_sum < 12 and done:
-            self.__reward -= 0.5  # shame, too low score
+        # Poor performance when finishing the game with very low sum
+        if player_sum <= 10 and done:
+            self.__reward -= 0.7 * penalty_factor
 
-        """ positive rewards ---------------------------"""
-        # přesně 21, big pog
+        # Bonus penalty: Staying below 17 repeatedly -- aka low ahh bitch
+        if player_sum < 17 and not done:
+            self.__reward -= 0.2  # Discourage waiting indefinitely in low-risk zones
+
+        """ Positive Rewards ------------------------------------- """
+        # Perfect blackjack, yeet to 1.0
         if player_sum == 21:
-            self.__reward += 0.8
+            self.__reward += 1.0
 
-        # close enough 20, furt pog
-        if player_sum == 20:
+        # not 21, but still very nice!
+        if 19 <= player_sum < 21:
+            self.__reward += 0.5
+
+        # STAND FOR THE WIN BEJBE, aka best way to vin if u ask me
+        if action == 0 and 17 <= player_sum < 21:
+            self.__reward += 0.4
+
+        # Bonus for gradually improving decisions (closer to 21), we aiming for the stars
+        if 15 <= player_sum < 17:
+            self.__reward += 0.3
+
+        # Encouragement to hit when player sum is low :)
+        if action == 1 and player_sum < 12:
             self.__reward += 0.2
 
-        # stand my beloved, basically nejlepší taktika jak vyhrát mám pocit:
-        if action == 0 and player_sum >= 17:
-            self.__reward += 0.3
+        # Reward if the player stops between safe thresholds (18-19)
+        if action == 0 and 18 <= player_sum < 20:
+            self.__reward += 0.4
+
+        # Moderate reward for standing exactly at 20
+        if action == 0 and player_sum == 20:
+            self.__reward += 0.25
+
+        """ Additional Context-Based Adjustments ----------------- """
+        # Reward slight aggression (hitting) when player_sum is safe
+        if action == 1 and 13 <= player_sum <= 16:
+            self.__reward += 0.1
+
+        # Light penalty for overconfidence with a low sum
+        if action == 1 and player_sum <= 8:
+            self.__reward -= 0.2
+
+        # Neutralize small penalties if the player is still trying
+        if not done and 12 <= player_sum <= 14:
+            self.__reward += 0.05
 
     def train_agent(self):
         """Trénuje agenta na definovaný počet epizod."""
-        for _ in tqdm(range(self.__n_episodes)):
+        for one_round in tqdm(range(self.__n_episodes)):
             obs, info = self.__env.reset()
             done = False
             episode_length = 0  # Počet kroků v aktuální epizodě
@@ -119,7 +154,7 @@ class Environment:
 
                 # REWARD penalty logic is in def up above this
                 player_sum = obs[0]
-                self.player_reward(player_sum, action, done)
+                self.player_reward(player_sum, action, done, one_round)
 
                 # Aktualizace agenta
                 self.agent.update(obs, action, self.__reward, terminated, next_obs)
