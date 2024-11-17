@@ -74,6 +74,19 @@ class Environment:
         elif result == 'draw':
             self.draws += 1
 
+    def player_reward(self, player_sum, action, done):
+        # penalty when overshooting 21
+        if player_sum > 21:
+            self.__reward -= 0.6
+
+        # too much risky move
+        if action == 1 and player_sum >= 17:
+            self.__reward -= 0.3
+
+        # player is in lower numbers, SHAME
+        if player_sum < 12 and done:
+            self.__reward -= 0.7  # shame, too low score
+
     def train_agent(self):
         """Trénuje agenta na definovaný počet epizod."""
         for _ in tqdm(range(self.__n_episodes)):
@@ -85,6 +98,10 @@ class Environment:
             while not done:
                 action = self.agent.get_action(self.__env, obs)
                 next_obs, self.__reward, terminated, truncated, info = self.__env.step(action)
+
+                # REWARD penalty logic is in def up above this
+                player_sum = obs[0]
+                self.player_reward(player_sum, action, done)
 
                 # Aktualizace agenta
                 self.agent.update(obs, action, self.__reward, terminated, next_obs)
@@ -118,14 +135,12 @@ class Environment:
             # Snižujeme epsilon
             self.agent.decay_epsilon()
 
-        # Po dokončení všech epizod vypíšeme souhrn
-        self.print_final_results()
-
-    def print_final_results(self):
+        # Po dokončení všech epizod vypočítáme procentil a vypíšeme:
         self.__percentage_player = round((self.player_wins / len(self.return_queue)) * 100, 1)
         self.__percentage_dealer = round((self.dealer_wins / len(self.return_queue)) * 100, 1)
         self.__percentage_draw = round((self.draws / len(self.return_queue)) * 100, 1)
 
+    def print_final_results(self):
         print("\nTrénování dokončeno! Výsledky:")
         print(f"\nKonečné skóre po {len(self.return_queue)} epizodách:")
         print(f"Hráč vyhrál {self.player_wins}x, což odpovídá {self.__percentage_player}% úspěšnosti.")
