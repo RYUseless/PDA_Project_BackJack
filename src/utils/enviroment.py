@@ -10,6 +10,8 @@ class Environment:
     def __init__(self,
                  n_episodes=100_000,
                  learning_rate=0.01,
+                 min_learning_rate=0.001,
+                 lr_decay=0.95,
                  start_epsilon=1.0,
                  epsilon_decay=0.95,
                  final_epsilon=0.1,
@@ -46,6 +48,8 @@ class Environment:
         self.agent = BlackjackAgent(
             env=self.__env,
             learning_rate=learning_rate,
+            min_learning_rate=min_learning_rate,
+            lr_decay=lr_decay,
             initial_epsilon=start_epsilon,
             epsilon_decay=epsilon_decay,
             final_epsilon=final_epsilon,
@@ -71,17 +75,35 @@ class Environment:
             self.draws += 1
 
     def player_reward(self, player_sum, action, done):
+        """negative rewards:"""
         # penalty when overshooting 21
         if player_sum > 21:
-            self.__reward -= 0.6
+            self.__reward -= 1.0
 
         # too much risky move
         if action == 1 and player_sum >= 17:
             self.__reward -= 0.3
 
+        # BROTHER IS CAMPING HIS CARD WTF
+        if action == 0 and player_sum < 12:
+            self.__reward -= 0.3
+
         # player is in lower numbers, SHAME
         if player_sum < 12 and done:
-            self.__reward -= 0.7  # shame, too low score
+            self.__reward -= 0.5  # shame, too low score
+
+        """ positive rewards ---------------------------"""
+        # přesně 21, big pog
+        if player_sum == 21:
+            self.__reward += 0.8
+
+        # close enough 20, furt pog
+        if player_sum == 20:
+            self.__reward += 0.2
+
+        # stand my beloved, basically nejlepší taktika jak vyhrát mám pocit:
+        if action == 0 and player_sum >= 17:
+            self.__reward += 0.3
 
     def train_agent(self):
         """Trénuje agenta na definovaný počet epizod."""
