@@ -11,7 +11,7 @@ class Environment:
                  n_episodes=100_000,
                  learning_rate=0.01,
                  min_learning_rate=0.001,
-                 lr_decay=0.9999,
+                 lr_decay=0.95,
                  start_epsilon=1.0,
                  epsilon_decay=0.95,
                  final_epsilon=0.1,
