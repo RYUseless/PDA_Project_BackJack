@@ -8,7 +8,7 @@ from src.utils.agent import BlackjackAgent
 
 class Environment:
     def __init__(self,
-                 n_episodes=100_000,
+                 n_episodes=100_00,
                  learning_rate=0.01,
                  min_learning_rate=0.001,
                  lr_decay=0.95,
@@ -205,3 +205,11 @@ class Environment:
 
     def close_env(self):
         self.__env.close()
+
+    # Metody pro ukládání a načítání agenta
+    def save_agent(self, file_path):
+        self.agent.save_policy(file_path)
+
+    def load_agent(self, file_path):
+        self.agent.load_policy(file_path)
+
