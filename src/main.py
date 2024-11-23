@@ -65,14 +65,10 @@ def main():
         env.print_final_results()
         Visualization.plot_training(env, env.agent)
 
-        user_input2 = help_inst.get_user_input2()
-        if user_input2:
-            # Uložení agenta do souboru
-            env.save_agent("trained_blackjack_agent.pkl")
-        else:
-            pass
+        """ Uložení agenta do souboru """
+        env.save_agent("trained_blackjack_agent.pkl")
 
-        # Načtení agenta ze souboru
+        """ Načtení agenta ze souboru """
         #env.load_agent("trained_blackjack_agent.pkl")
 
         env.close_env()

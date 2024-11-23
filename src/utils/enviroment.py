@@ -8,7 +8,7 @@ from src.utils.agent import BlackjackAgent
 
 class Environment:
     def __init__(self,
-                 n_episodes=100_00,
+                 n_episodes=100_000,
                  learning_rate=0.01,
                  min_learning_rate=0.001,
                  lr_decay=0.95,

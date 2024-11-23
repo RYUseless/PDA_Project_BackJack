@@ -39,21 +39,3 @@ class MainHelper:
 
         print(f"Průměrná procentuální remíza je: {round(sum(self.__draw_percentage) / len(self.__draw_percentage), 2):.2f}%")
 
-    @staticmethod
-    def get_user_input2():
-        attempts2 = 0  # Počet pokusů o správný vstup
-
-        while attempts2 < 3:
-            print("\n")
-            user_input = input("Chcete uložit natrénovaný model? [y/n]").strip().lower()
-
-            if user_input == 'y':
-                return True  # Vstup je 'Y' nebo 'y', vrátí True
-            elif user_input == 'n':
-                return False  # Vstup je 'N' nebo 'n', vrátí False
-            else:
-                attempts2 += 1  # Zvýšíme počet pokusů
-                print(f"Neplatný vstup. Pokus {attempts2} z 3.")  # Oznámení o neplatném vstupu
-
-        print("Příliš mnoho neplatných pokusů. Model nebude uložen.")
-        return False  # Po třech neplatných pokusech, vrátí False
