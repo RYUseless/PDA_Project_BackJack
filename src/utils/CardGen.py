@@ -1,95 +1,66 @@
-# Výchozí balíček je definován v globálu/ jeho modifikaci pro speciální pravidla/testování?
-# Fitness funkce/genetické programování nesmí vidět hodnoty karet, eliminovalo by to aspekt náhody
-# Omezení dealera ( stát na 17, nebrat dál po převýšení hráčovy sumy?)
-# Řešení probíhá pouze pro dvě karty, prokonzultovat se zbytkem jak to napojit na funkci která umožní další tah
+import gymnasium as gym
+import matplotlib.pyplot as plt
+import pandas as pd
+from collections import Counter
 
-import random
+# Inicializace prostředí Blackjack
+env = gym.make('Blackjack-v1', render_mode="human")
 
+# Data pro vizualizaci
+results = []
 
-class Generation:
-    def __init__(self):
-        print("\n\033[1m\u2022 Card Generation:\033[0m")
-        self.__deck = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8,
-                       9, 9, 9, 9, 10,
-                       10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
+# Odehrání 10 her
+for episode in range(10):
+    obs = env.reset()[0]  # Reset prostředí, získání startovního stavu
+    done = False
+    player_cards = []
+    dealer_cards = []
+    while not done:
+        action = 1 if obs[0] < 17 else 0  # Jednoduchá strategie
+        obs, reward, done, _, _ = env.step(action)
+        if len(player_cards) == 0:
+            player_cards.append(obs[0])
+        if len(dealer_cards) == 0:
+            dealer_cards.append(obs[1])
 
-    def _setup(self):
-        shuffle = random.randint(1, 9)
-        while shuffle > 0:
-            random.shuffle(self.__deck)
-            shuffle -= 1
-        self._play()
+    # Uložení výsledků
+    results.append({
+        "episode": episode + 1,
+        "player_cards": player_cards,
+        "dealer_cards": dealer_cards,
+        "reward": reward
+    })
 
-    def _play(self):
-        player_hand = []
-        dealer_hand = []
+# Převod dat do DataFrame
+df = pd.DataFrame(results)
 
-        # Deal initial two cards
-        for _ in range(2):
-            player_hand.append(self.__deck.pop(0))
-            dealer_hand.append(self.__deck.pop(0))
+# Výpočet četnosti karet
+player_card_counts = Counter(card for row in df['player_cards'] for card in row)
+dealer_card_counts = Counter(card for row in df['dealer_cards'] for card in row)
 
-        player_sum = self._calculate_hand(player_hand)
-        dealer_sum = self._calculate_hand(dealer_hand)
+# Vizualizace výsledků
+fig, ax = plt.subplots(figsize=(8, 5))
 
-        print("\tHodnota hráčovy ruky je :", player_sum)
-        # print("\tHodnota krupiérovy ruky je:", dealer_sum)
+# Graf: Výsledek každé hry
+df['result'] = df['reward'].map({1: 'Výhry', 0: 'Remízy', -1: 'Prohry'})
+result_colors = {'Výhry': 'green', 'Remízy': 'orange', 'Prohry': 'red'}
+df['result'].value_counts().reindex(result_colors.keys()).plot(
+    kind='bar',
+    ax=ax,
+    color=[result_colors[r] for r in result_colors.keys()]
+)
+ax.set_title("Výsledky her")
+ax.set_ylabel("Počet her", labelpad=20)
+ax.set_xlabel("Výsledky", labelpad=20)
 
-        # Check for initial blackjack
-        if player_sum == 21 and dealer_sum < 21:
-            print("\tHráč má blackjack, vítězí hráč")
-            return
-        elif dealer_sum == 21 and player_sum < 21:
-            print("\tKrupiér má blackjack, vítězí krupiér")
-            return
+plt.tight_layout()
+plt.show()
 
-        # Player turn
-        while player_sum < 21:
-            action = input("\tChcete další kartu? (ano/ne): ").strip().lower()
-            if action == 'ano':
-                player_hand.append(self.__deck.pop(0))
-                player_sum = self._calculate_hand(player_hand)
-                print("\tHodnota hráčovy ruky je :", player_sum)
-            else:
-                break
+# Výpis četností karet
+print("Hodnoty dosažené hráčem:")
+for card, count in sorted(player_card_counts.items()):
+    print(f"Celková hodnota karet {card}: {count}x")
 
-        # Dealer turn
-        while dealer_sum < 17:
-            dealer_hand.append(self.__deck.pop(0))
-            dealer_sum = self._calculate_hand(dealer_hand)
-            print("\tHodnota krupiérovy ruky je:", dealer_sum)
-
-        # Determine winner
-        if player_sum > 21:
-            print("\tHráč přetáhl, vítězí krupiér")
-        elif dealer_sum > 21:
-            print("\tKrupiér přetáhl, vítězí hráč")
-        elif player_sum > dealer_sum:
-            print("\tHráč vítězí")
-        elif dealer_sum > player_sum:
-            print("\tKrupiér vítězí")
-        else:
-            print("\tRemíza")
-
-    @staticmethod
-    def _calculate_hand(hand):
-        total = 0
-        ace_count = 0
-        for card in hand:
-            if card == 1:
-                ace_count += 1
-                total += 11
-            else:
-                total += card
-
-        # Adjust for aces
-        while total > 21 and ace_count > 0:
-            total -= 10
-            ace_count -= 1
-
-        return total
-
-    def run(self):
-        self._setup()
-
-
+print("\nHodnoty dosažené krupiérem:")
+for card, count in sorted(dealer_card_counts.items()):
+    print(f"Hodnota viditelné karty {card}: {count}x")
