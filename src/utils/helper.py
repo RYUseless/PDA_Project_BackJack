@@ -38,3 +38,4 @@ class MainHelper:
             f"Průměrná procentuální výhra dealera je: {round(sum(self.__dealer_percentage) / len(self.__dealer_percentage), 2):.2f}%")
 
         print(f"Průměrná procentuální remíza je: {round(sum(self.__draw_percentage) / len(self.__draw_percentage), 2):.2f}%")
+
