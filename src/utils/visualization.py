@@ -54,6 +54,4 @@ class Visualization:
         # Zavře grafické okno
         plt.close()
 
-        # Ukončí program po zavření okna
         print("Graf zavřen. Program se ukončuje.")
-        #exit()
