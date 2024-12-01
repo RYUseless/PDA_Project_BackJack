@@ -64,6 +64,13 @@ def main():
         env.train_agent()
         env.print_final_results()
         Visualization.plot_training(env, env.agent)
+
+        """ Uložení agenta do souboru """
+        env.save_agent("trained_blackjack_agent.pkl")
+
+        """ Načtení agenta ze souboru """
+        #env.load_agent("trained_blackjack_agent.pkl")
+
         env.close_env()
 
 

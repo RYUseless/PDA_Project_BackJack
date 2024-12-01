@@ -1,84 +1,95 @@
-import gymnasium as gym
-import matplotlib.pyplot as plt
-import pandas as pd
+# Výchozí balíček je definován v globálu/ jeho modifikaci pro speciální pravidla/testování?
+# Fitness funkce/genetické programování nesmí vidět hodnoty karet, eliminovalo by to aspekt náhody
+# Omezení dealera ( stát na 17, nebrat dál po převýšení hráčovy sumy?)
+# Řešení probíhá pouze pro dvě karty, prokonzultovat se zbytkem jak to napojit na funkci která umožní další tah
+
+import random
 
 
-from src.utils.agent import BlackjackAgent
+class Generation:
+    def __init__(self):
+        print("\n\033[1m\u2022 Card Generation:\033[0m")
+        self.__deck = [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8,
+                       9, 9, 9, 9, 10,
+                       10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
+
+    def _setup(self):
+        shuffle = random.randint(1, 9)
+        while shuffle > 0:
+            random.shuffle(self.__deck)
+            shuffle -= 1
+        self._play()
+
+    def _play(self):
+        player_hand = []
+        dealer_hand = []
+
+        # Deal initial two cards
+        for _ in range(2):
+            player_hand.append(self.__deck.pop(0))
+            dealer_hand.append(self.__deck.pop(0))
+
+        player_sum = self._calculate_hand(player_hand)
+        dealer_sum = self._calculate_hand(dealer_hand)
+
+        print("\tHodnota hráčovy ruky je :", player_sum)
+        # print("\tHodnota krupiérovy ruky je:", dealer_sum)
+
+        # Check for initial blackjack
+        if player_sum == 21 and dealer_sum < 21:
+            print("\tHráč má blackjack, vítězí hráč")
+            return
+        elif dealer_sum == 21 and player_sum < 21:
+            print("\tKrupiér má blackjack, vítězí krupiér")
+            return
+
+        # Player turn
+        while player_sum < 21:
+            action = input("\tChcete další kartu? (ano/ne): ").strip().lower()
+            if action == 'ano':
+                player_hand.append(self.__deck.pop(0))
+                player_sum = self._calculate_hand(player_hand)
+                print("\tHodnota hráčovy ruky je :", player_sum)
+            else:
+                break
+
+        # Dealer turn
+        while dealer_sum < 17:
+            dealer_hand.append(self.__deck.pop(0))
+            dealer_sum = self._calculate_hand(dealer_hand)
+            print("\tHodnota krupiérovy ruky je:", dealer_sum)
+
+        # Determine winner
+        if player_sum > 21:
+            print("\tHráč přetáhl, vítězí krupiér")
+        elif dealer_sum > 21:
+            print("\tKrupiér přetáhl, vítězí hráč")
+        elif player_sum > dealer_sum:
+            print("\tHráč vítězí")
+        elif dealer_sum > player_sum:
+            print("\tKrupiér vítězí")
+        else:
+            print("\tRemíza")
+
+    @staticmethod
+    def _calculate_hand(hand):
+        total = 0
+        ace_count = 0
+        for card in hand:
+            if card == 1:
+                ace_count += 1
+                total += 11
+            else:
+                total += card
+
+        # Adjust for aces
+        while total > 21 and ace_count > 0:
+            total -= 10
+            ace_count -= 1
+
+        return total
+
+    def run(self):
+        self._setup()
 
 
-class Visualize:
-    def __init__(self,agent,env):
-
-        self.agent = agent
-        self.env = env
-        self.results = []
-    def games(self):
-        self.results = []
-        # Inicializace prostředí Blackjack
-        env = gym.make('Blackjack-v1', render_mode="human")
-
-        agent = BlackjackAgent(
-        self,
-        learning_rate=0.01,
-        min_learning_rate = 0.001,
-        lr_decay = 0.95,
-        initial_epsilon = 1.0,
-        epsilon_decay = 0.95,
-        final_epsilon = 0.1,    )
-        # Data pro vizualizaci
-        for episode in range(10):
-            obs = env.reset()  # Reset prostředí, získání startovního stavu
-            done = False
-            player_cards = []
-            dealer_cards = []
-            moves = []
-            reward = 0
-            while not done:
-                action = agent.get_action(self.env,obs)
-                moves.append(action)
-                obs, reward, done, _, _ = env.step(action)
-                if len(player_cards) == 0:
-                    player_cards.append(obs[0])
-                if len(dealer_cards) == 0:
-                    dealer_cards.append(obs[1])
-
-            result = 0  # Initialize to 0 (draw)
-            if reward > 0:
-                result = 1  # Win
-            elif reward < 0:
-                result = -1  # Loss
-
-            # Uložení výsledků
-            self.results.append({
-                "episode": episode + 1,
-                "player_cards": player_cards,
-                "dealer_cards": dealer_cards,
-                "moves": result  # This line is changed
-            })
-    def graph(self, results):
-        df = pd.DataFrame(results)
-
-        # Vizualizace výsledků
-        fig, ax = plt.subplots(figsize=(8, 5))
-
-        # Graf: Výsledek každé hry
-        df['result'] = df['moves'].map({1: 'Výhry', 0: 'Remízy', -1: 'Prohry'})
-        result_colors = {'Výhry': 'green', 'Remízy': 'orange', 'Prohry': 'red'}
-        df['result'].value_counts().reindex(result_colors.keys()).plot(
-            kind='bar',
-            ax=ax,
-            color=[result_colors[r] for r in result_colors.keys()]
-        )
-        ax.set_title("Výsledky her")
-        ax.set_ylabel("Počet her", labelpad=20)
-        ax.set_xlabel("Výsledky", labelpad=20)
-
-        plt.tight_layout()
-        plt.show()
-
-# Create an instance of the Visualize class
-visualizer = Visualize(BlackjackAgent, gym.make('Blackjack-v1', render_mode="human"))
-
-
-visualizer.games()
-visualizer.graph(visualizer.results)

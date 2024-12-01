@@ -3,7 +3,6 @@ from collections import defaultdict
 import numpy as np
 import pickle
 
-from fontTools.misc.bezierTools import epsilon
 
 class BlackjackAgent:
     def __init__(
@@ -16,7 +15,6 @@ class BlackjackAgent:
             epsilon_decay: float,
             final_epsilon: float,
             discount_factor: float = 0.95,
-            start_epsilon=1.0
     ):
         self.env = env
         """Inicializuje agenta pro Q-learning s prázdnou Q-tabulkou a hyperparametry."""
@@ -30,7 +28,7 @@ class BlackjackAgent:
         self.epsilon_decay = epsilon_decay
         self.final_epsilon = final_epsilon
         self.training_error = []
-        self.epsilon = start_epsilon
+
     def _default_q_values(self):
         return np.zeros(self.env.env.action_space.n)
 
