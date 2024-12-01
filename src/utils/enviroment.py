@@ -178,11 +178,9 @@ class Environment:
 
             # Aktualizuj výsledky
             self.update_results(result)
-
             # Sledujeme odměny a délky epizod
             self.return_queue.append(self.__reward)
             self.length_queue.append(episode_length)
-
             # Po každé epizodě nebudeme tisknout výsledek, souhrn se zobrazí na konci
 
             # Snižujeme epsilon
@@ -199,9 +197,16 @@ class Environment:
         print(f"Hráč vyhrál {self.player_wins}x, což odpovídá {self.__percentage_player}% úspěšnosti.")
         print(f"Dealer vyhrál {self.dealer_wins}x, což odpovídá {self.__percentage_dealer}% úspěšnosti.")
         print(f"Remízy: {self.draws}x, což odpovídá {self.__percentage_draw}% úspěšnosti.")
-
     def get_results(self):
         return self.__percentage_player, self.__percentage_dealer, self.__percentage_draw
 
     def close_env(self):
         self.__env.close()
+
+    # Metody pro ukládání a načítání agenta
+    def save_agent(self, file_path):
+        self.agent.save_policy(file_path)
+
+    def load_agent(self, file_path):
+        self.agent.load_policy(file_path)
+

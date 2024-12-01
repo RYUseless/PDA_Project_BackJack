@@ -1,7 +1,9 @@
 # agent.py
 from collections import defaultdict
 import numpy as np
+import pickle
 
+from fontTools.misc.bezierTools import epsilon
 
 class BlackjackAgent:
     def __init__(
@@ -14,10 +16,12 @@ class BlackjackAgent:
             epsilon_decay: float,
             final_epsilon: float,
             discount_factor: float = 0.95,
+            start_epsilon=1.0
     ):
+        self.env = env
         """Inicializuje agenta pro Q-learning s prázdnou Q-tabulkou a hyperparametry."""
-        self.q_values1 = defaultdict(lambda: np.zeros(env.env.action_space.n))
-        self.q_values2 = defaultdict(lambda: np.zeros(env.env.action_space.n))
+        self.q_values1 = defaultdict(self._default_q_values)
+        self.q_values2 = defaultdict(self._default_q_values)
         self.lr = learning_rate
         self.min_lr = min_learning_rate
         self.lr_decay = lr_decay
@@ -26,6 +30,9 @@ class BlackjackAgent:
         self.epsilon_decay = epsilon_decay
         self.final_epsilon = final_epsilon
         self.training_error = []
+        self.epsilon = start_epsilon
+    def _default_q_values(self):
+        return np.zeros(self.env.env.action_space.n)
 
     def get_action(self, env, obs: tuple[int, int, bool]) -> int:
         """Vrací akci s nejvyšší hodnotou nebo náhodnou akci pro zajištění průzkumu."""
@@ -56,6 +63,14 @@ class BlackjackAgent:
         """Dynamicky snižuje hodnotu learning rate."""
         self.lr = max(self.min_lr, self.lr * self.lr_decay)
 
+    def save_policy(self, file_path):
+        """Ukládá aktuální model (Q-tabulky) do souboru."""
+        with open(file_path, 'wb') as f:
+            pickle.dump((self.q_values1, self.q_values2), f)
 
+    def load_policy(self, file_path):
+        """Načítá model (Q-tabulky) ze souboru."""
+        with open(file_path, 'rb') as f:
+            self.q_values1, self.q_values2 = pickle.load(f)
 
 
