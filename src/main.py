@@ -1,10 +1,11 @@
 # outside imports:
-import src.utils.funny as InitialPrint
+import src.funny.funny as InitialPrint
 from src.utils.enviroment import Environment
 import os
 from concurrent.futures import ProcessPoolExecutor
 # local imports:
 import src.utils.helper as RyuHelp
+import src.utils.jsonActions as ryu_JS
 from src.utils.visualization import Visualization
 
 
@@ -22,6 +23,7 @@ def train_single_run(iteration, user_input):
 
 def main():
     """Main function"""
+    R_JS = ryu_JS.Actions()
     funnyPrint_instance = InitialPrint.Greeter()
     funnyPrint_instance.run()
 
@@ -29,7 +31,14 @@ def main():
     help_inst = RyuHelp.MainHelper()
     user_input = help_inst.get_user_input()
 
-    iterations = 1 if not user_input else 10  # decide between 10 runs and 1 run (user input)
+    """Decide, how many runs there should be"""
+    number_of_model_runs = R_JS.read_config("number_of_models_trained", "count")
+    iterations = (
+        1 if not user_input  # user picked "n" to prompt, aka single run only
+        else number_of_model_runs if number_of_model_runs is not None  # user picker 10, check if config value is not none
+        else 10  # If none, default to 10
+    )
+
     cpu_count = os.cpu_count()  # get number of THREADS
 
     if iterations > 1:  # If user picked 10run training
@@ -56,7 +65,7 @@ def main():
                     if result:  # valid results filter (no none and shit i hope)
                         help_inst.get_run_percentage(*result)  # *value gets each value from arr and fowards it as it is
 
-        # count the michael avarage
+        # count the michael average
         help_inst.get_avarage()
     else:
         # If user picked only single training run
@@ -64,9 +73,17 @@ def main():
         env.train_agent()
         env.print_final_results()
         Visualization.plot_training(env, env.agent)
+
+        """ Uložení agenta do souboru """
+        env.save_agent("trained_blackjack_agent.pkl")
+
+        """ Načtení agenta ze souboru """
+        # env.load_agent("trained_blackjack_agent.pkl")
+
         env.close_env()
 
 
 if __name__ == "__main__":
     """wannabe main"""
     main()
+
