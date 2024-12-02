@@ -1,5 +1,6 @@
 # outside imports:
 import src.funny.funny as InitialPrint
+from src.utils.agent import BlackjackAgent
 from src.utils.enviroment import Environment
 import os
 from concurrent.futures import ProcessPoolExecutor
@@ -71,6 +72,10 @@ def main():
         # If user picked only single training run
         env = Environment()
         env.train_agent()
+        visualizer = RyuHelp.Visualize(BlackjackAgent)
+
+
+        visualizer.games()
         env.print_final_results()
         Visualization.plot_training(env, env.agent)
 
