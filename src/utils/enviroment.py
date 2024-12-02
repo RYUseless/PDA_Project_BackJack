@@ -11,8 +11,8 @@ class Environment:
     def __init__(self):
         self.agent = None
         self.__reward = 0
-        self.__env = gym.make("Blackjack-v1", natural=True)  # 'natural=True' if you want to deal with aces correctly
-
+        self.__env = gym.make("Blackjack-v1", natural=True)
+        self.results = []
         # Placeholder values for JSON load from config file
         # These values are None, because I am reading them from config.json in load_model_values
         # and basically there is also check for the values if they are none, if not, no more loading → less runtime!
@@ -150,6 +150,7 @@ class Environment:
                 obs = next_obs
                 episode_length += 1
 
+
             # Determine result and update scores
             if float(self.__reward) > 0.0:
                 result = 'player'
@@ -159,6 +160,11 @@ class Environment:
                 result = 'draw'
 
             self.update_results(result)
+
+            self.results.append({
+                "episode": one_round + 1,
+                "moves": result
+            })
 
             # Track rewards and episode lengths
             self.return_queue.append(self.__reward)
@@ -172,11 +178,16 @@ class Environment:
         self.__percentage_dealer = round((self.dealer_wins / len(self.return_queue)) * 100, 1)
         self.__percentage_draw = round((self.draws / len(self.return_queue)) * 100, 1)
 
+    def get_training_data(self):
+        print("Toto funguje",len(self.results))
+        return self.results
+
     def print_final_results(self):
         print("\nVýsledek natrénovaného modelu po %s epizodách:" % len(self.return_queue))
         print(f"Výhry hráče: {self.player_wins}x, což odpovídá: {self.__percentage_player}% úspěšnosti.")
         print(f"Výhry dealera {self.dealer_wins}x, což odpovídá: {self.__percentage_dealer}% úspěšnosti.")
         print(f"Remízy, aka nevyhrál nikdo: {self.draws}x, což je {self.__percentage_draw}%.")
+
 
     def get_results(self):
         return self.__percentage_player, self.__percentage_dealer, self.__percentage_draw

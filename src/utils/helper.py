@@ -1,8 +1,9 @@
 import gymnasium as gym
-import matplotlib.pyplot as plt
-import pandas as pd
+
+
 from src.utils.agent import BlackjackAgent
 import src.utils.jsonActions as Ryu_JS
+from src.utils.jsonActions import Actions
 
 
 class MainHelper:
@@ -48,9 +49,9 @@ class MainHelper:
 
 
 class Visualize:
-    def __init__(self, agent, env):
+    def __init__(self, env):
 
-        self.agent = agent
+        self.config = Actions()
         self.env = env
         self.results = []
 
@@ -61,14 +62,18 @@ class Visualize:
 
         agent = BlackjackAgent(
             self,
-            learning_rate=0.01,
-            min_learning_rate=0.001,
-            lr_decay=0.95,
-            initial_epsilon=1.0,
-            epsilon_decay=0.95,
-            final_epsilon=0.1)
+            learning_rate=self.config.read_config("model_config", "learning_rate"),
+            min_learning_rate=self.config.read_config("model_config", "min_learning_rate"),
+            lr_decay=self.config.read_config("model_config", "lr_decay"),
+            initial_epsilon=self.config.read_config("model_config", "start_epsilon"),
+            epsilon_decay=self.config.read_config("model_config", "epsilon_decay"),
+            final_epsilon=self.config.read_config("model_config", "final_epsilon")
+        )
+
+        start_episode = int(input("Enter the start episode for visualization: "))
+        num_games = int(input("Enter the number of games to visualize: "))
         # Data pro vizualizaci
-        for episode in range(10):
+        for episode in range(start_episode, start_episode + num_games):
             obs = env.reset()  # Reset prostředí, získání startovního stavu
             done = False
             player_cards = []
@@ -76,7 +81,7 @@ class Visualize:
             moves = []
             reward = 0
             while not done:
-                action = agent.get_action(self.env, obs)
+                action = agent.get_action(env,obs)
                 moves.append(action)
                 obs, reward, done, _, _ = env.step(action)
                 if len(player_cards) == 0:
@@ -98,32 +103,4 @@ class Visualize:
                 "moves": result  # This line is changed
             })
 
-    def graph(self, results):
-        df = pd.DataFrame(results)
 
-        # Vizualizace výsledků
-        fig, ax = plt.subplots(figsize=(8, 5))
-
-        # Graf: Výsledek každé hry
-        df['result'] = df['moves'].map({1: 'Výhry', 0: 'Remízy', -1: 'Prohry'})
-        result_colors = {'Výhry': 'green', 'Remízy': 'orange', 'Prohry': 'red'}
-        df['result'].value_counts().reindex(result_colors.keys()).plot(
-            kind='bar',
-            ax=ax,
-            color=[result_colors[r] for r in result_colors.keys()]
-        )
-        ax.set_title("Výsledky her")
-        ax.set_ylabel("Počet her", labelpad=20)
-        ax.set_xlabel("Výsledky", labelpad=20)
-
-        plt.tight_layout()
-        plt.show()
-
-
-# Create an instance of the Visualize class
-# visualizer = Visualize(BlackjackAgent, gym.make('Blackjack-v1', render_mode="human"))
-
-
-# visualizer.games()
-# visualizer.graph(visualizer.results)
-print("v tuto chvíli se pouští visualizer")
