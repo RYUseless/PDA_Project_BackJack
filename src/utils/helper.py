@@ -57,6 +57,7 @@ class Visualize:
 
     def games(self):
         self.results = []
+        attempts = 0
         # Inicializace prostředí Blackjack
         env = gym.make('Blackjack-v1', render_mode="human")
 
@@ -70,43 +71,59 @@ class Visualize:
             final_epsilon=self.config.read_config("model_config", "final_epsilon")
         )
 
-        while True:
+        while attempts < 3:
             try:
                 start_episode = int(input("Enter the start episode for visualization: "))
                 num_games = int(input("Enter the number of games to visualize: "))
+
+                start_episode_range = (1, 100000)
+                num_games_range = (1, 100000)
+
+                if not (start_episode_range[0] <= start_episode <= start_episode_range[1]):
+                    attempts += 1
+                    raise ValueError("Start episode is out of range.")
+                if not (num_games_range[0] <= num_games <= num_games_range[1]):
+                    attempts += 1
+                    raise ValueError("Number of games is out of range.")
                 break
             except ValueError:
-                print("Invalid input. Please enter number")
+                print("Invalid input. Please enter a number.")
+                attempts += 1
 
-        # Data pro vizualizaci
-        for episode in range(start_episode, start_episode + num_games):
-            obs = env.reset()  # Reset prostředí, získání startovního stavu
-            done = False
-            player_cards = []
-            dealer_cards = []
-            moves = []
-            reward = 0
-            while not done:
-                action = agent.get_action(env,obs)
-                moves.append(action)
-                obs, reward, done, _, _ = env.step(action)
-                if len(player_cards) == 0:
-                    player_cards.append(obs[0])
-                if len(dealer_cards) == 0:
-                    dealer_cards.append(obs[1])
+        if attempts == 3:
+            print("Too many incorrect attempts. Skipping visualization.")
+            return
 
-            result = 0  # Initialize to 0 (draw)
-            if reward > 0:
-                result = 1  # Win
-            elif reward < 0:
-                result = -1  # Loss
+        else:
+            # Data pro vizualizaci
+            for episode in range(start_episode, start_episode + num_games):
+                obs = env.reset()  # Reset prostředí, získání startovního stavu
+                done = False
+                player_cards = []
+                dealer_cards = []
+                moves = []
+                reward = 0
+                while not done:
+                    action = agent.get_action(env,obs)
+                    moves.append(action)
+                    obs, reward, done, _, _ = env.step(action)
+                    if len(player_cards) == 0:
+                        player_cards.append(obs[0])
+                    if len(dealer_cards) == 0:
+                        dealer_cards.append(obs[1])
 
-            # Uložení výsledků
-            self.results.append({
-                "episode": episode + 1,
-                "player_cards": player_cards,
-                "dealer_cards": dealer_cards,
-                "moves": result  # This line is changed
-            })
+                result = 0  # Initialize to 0 (draw)
+                if reward > 0:
+                    result = 1  # Win
+                elif reward < 0:
+                    result = -1  # Loss
+
+                # Uložení výsledků
+                self.results.append({
+                    "episode": episode + 1,
+                    "player_cards": player_cards,
+                    "dealer_cards": dealer_cards,
+                    "moves": result  # This line is changed
+                })
 
 
