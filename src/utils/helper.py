@@ -70,8 +70,14 @@ class Visualize:
             final_epsilon=self.config.read_config("model_config", "final_epsilon")
         )
 
-        start_episode = int(input("Enter the start episode for visualization: "))
-        num_games = int(input("Enter the number of games to visualize: "))
+        while True:
+            try:
+                start_episode = int(input("Enter the start episode for visualization: "))
+                num_games = int(input("Enter the number of games to visualize: "))
+                break
+            except ValueError:
+                print("Invalid input. Please enter number")
+
         # Data pro vizualizaci
         for episode in range(start_episode, start_episode + num_games):
             obs = env.reset()  # Reset prostředí, získání startovního stavu
